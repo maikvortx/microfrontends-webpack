@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { ModuleFederationPlugin } = require('webpack').container;
+const ExternalTemplateRemotesPlugin = require("external-remotes-plugin");
 const path = require('path');
 
 module.exports = {
@@ -7,7 +8,7 @@ module.exports = {
   mode: 'development',
   devServer: {
     static: path.join(__dirname, 'dist'),
-    port: 3002,
+    port: 3030,
   },
   output: {
     publicPath: 'auto',
@@ -15,11 +16,14 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.js?$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
         options: {
-          presets: ['@babel/preset-react'],
+          presets: [
+            '@babel/preset-env',
+            ["@babel/preset-react", { "runtime": "automatic" }]
+          ],
         },
       },
     ],
@@ -27,13 +31,13 @@ module.exports = {
   plugins: [
     // To learn more about the usage of this plugin, please visit https://webpack.js.org/plugins/module-federation-plugin/
     new ModuleFederationPlugin({
-      name: 'app2',
-      filename: 'remoteEntry.js',
-      exposes: {
-        './App': './src/App',
+      name: "one",
+      remotes: {
+        boletador: "boletador@http://localhost:3050/remoteEntry.js",
       },
-      shared: { react: { singleton: true }, 'react-dom': { singleton: true } },
+      // shared: { react: { singleton: true }, "react-dom": { singleton: true } },
     }),
+    new ExternalTemplateRemotesPlugin(),
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
